@@ -3,11 +3,9 @@ const MongoClient = require("mongodb").MongoClient;
 
 // connect to the db
 const url = process.env.DATABASE_URL;
-const cert = process.env.CA_CERT;
-const dbName = "tweets";
+const dbName = "todos";
 
 if (!url) throw new Error("Please enter a DATABASE_URL");
-if (!cert) throw new Error("Please enter a CA_CERT");
 
 // connect to the db
 let cachedClient = null;
@@ -23,7 +21,7 @@ module.exports = async function connectToDatabase() {
   // write the cert to a temporary file
   // we need app platform to be able to read the file
   // we will pull the cert from environment variables and write it to a temporary file
-  fs.writeFileSync("./ca-certificate.crt", cert);
+  // fs.writeFileSync("./ca-certificate.crt", cert);
 
   const client = await MongoClient.connect(url, {
     useNewUrlParser: true,

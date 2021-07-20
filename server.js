@@ -1,11 +1,16 @@
 require("dotenv").config();
 
 // get all the packages we need
+const cors = require("cors");
 const express = require("express");
 const app = express();
+
 const connectToDatabase = require("./connectToDatabase");
 
 const port = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(cors());
 
 /**
  * routes
@@ -17,49 +22,48 @@ const port = process.env.PORT || 3000;
  * Home Page
  */
 app.get("/", async (req, res) => {
-  res.json({ message: "welcome to the new twitter!" });
+  res.json({ message: "To.do endpoint" });
 });
 
 /**
- * Get all tweets
+ * Get all todo
  */
-app.get("/tweets", async (req, res) => {
+app.get("/todo", async (req, res) => {
   const { db } = await connectToDatabase();
-  const tweets = await db.collection("tweets").find({}).toArray();
-  res.json({ tweets });
+  const todo = await db.collection("todo").find({}).toArray();
+  res.json({ todo });
 });
 
-// get a single tweet
-app.get("/tweets/:tweetId", async (req, res) => {
+// get a single todo
+app.get("/todo/:todoId", async (req, res) => {
   const { db } = await connectToDatabase();
-  const tweet = await db
-    .collection("tweets")
-    .findOne({ _id: req.params.tweetId });
-  res.json({ tweet });
+  const todo = await db.collection("todo").findOne({ id: req.params.todoId });
+  res.json({ todo });
 });
 
-// create a tweet
-app.post("/tweets", async (req, res) => {
+// create a todo
+app.post("/todo", async (req, res) => {
   const { db } = await connectToDatabase();
-  const tweet = await db.collection("tweets").insertOne(req.body.text);
-  res.json({ tweet });
+  const todo = await db.collection("todo").insertOne(req.body);
+  res.json({ todo: todo.ops[0] });
 });
 
-// update a tweet
-app.put("/tweets/:tweetId", async (req, res) => {
+// update a todo
+app.put("/todo/:todoId", async (req, res) => {
   const { db } = await connectToDatabase();
-  const tweet = await db
-    .collection("tweets")
-    .updateOne({ _id: req.params.tweetId }, { $set: { text: req.body.text } });
+  delete req.body._id;
+  const todo = await db
+    .collection("todo")
+    .updateOne({ id: req.params.todoId }, { $set: req.body });
 
-  res.json({ tweet });
+  res.json({ todo });
 });
 
-// delete a tweet
-app.delete("/tweets/:tweetId", async (req, res) => {
+// delete a todo
+app.delete("/todo/:todoId", async (req, res) => {
   const { db } = await connectToDatabase();
-  await db.collection("tweets").deleteOne({ _id: req.params.tweetId });
-  res.code(204);
+  await db.collection("todo").deleteOne({ id: req.params.todoId });
+  res.json({}).status(204);
 });
 
 // express listen on 3000 and log a message
